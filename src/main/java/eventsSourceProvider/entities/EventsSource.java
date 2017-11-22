@@ -4,6 +4,8 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -17,23 +19,25 @@ import javax.persistence.Table;
 public class EventsSource {
 
 	@Id
-	@Column(name = "id", columnDefinition = "int(6) NOT NULL AUTO_INCREMENT")
+	@Column(name = "id", columnDefinition = "int(6) NOT NULL AUTO_INCREMENT", insertable = false, updatable = false)
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "id", columnDefinition = "varchar(100) NOT NULL")
+	@Column(name = "source", columnDefinition = "varchar(100) NOT NULL")
 	private String sourceURL;
 
 	@Column(name = "event_default_type", columnDefinition = "enum('PAGE','GROUP','USER') NOT NULL")
+	@Enumerated(EnumType.STRING)
 	private EventDefaultType eventDefaultType;
 
 	@Column(name = "last_check_result", columnDefinition = "enum('not_checked','new_event_found','none_new_event_found','unavailable') NOT NULL")
+	@Enumerated(EnumType.STRING)
 	private LastCheckResult lastCheckResult;
 
-	@Column(name = "last_check_time", columnDefinition = "datetime NOT NULL DEFAULT '0000-00-00 00:00:00'")
+	@Column(name = "last_check_time", columnDefinition = "datetime")
 	private Date lastCheckTime;
 
-	@Column(name = "next_check_time", columnDefinition = "datetime NOT NULL DEFAULT '0000-00-00 00:00:00'")
+	@Column(name = "next_check_time", columnDefinition = "datetime")
 	private Date nextCheckTime;
 
 	@Column(name = "download_frequency_in_hours", columnDefinition = "int(5) NOT NULL DEFAULT '0'")
@@ -43,6 +47,7 @@ public class EventsSource {
 	private Date added;
 
 	@Column(name = "source_type", columnDefinition = "enum('PAGE','GROUP','USER') NOT NULL")
+	@Enumerated(EnumType.STRING)
 	private SourceType sourceType;
 
 	private EventsSource() {
@@ -55,6 +60,14 @@ public class EventsSource {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public String getSourceURL() {
+		return sourceURL;
+	}
+
+	public void setSourceURL(String sourceURL) {
+		this.sourceURL = sourceURL;
 	}
 
 	public EventDefaultType getEventDefaultType() {
