@@ -7,9 +7,8 @@ public class Application {
 
 	public static void main(String[] args) {
 		ApplicationContext context = new ClassPathXmlApplicationContext("Beans.xml");
-		TaskSchedulerExample ts = (TaskSchedulerExample) context.getBean("taskSchedulerExample");
-		ts.schedule();
-
+		Scheduler ts = (Scheduler) context.getBean("scheduler");
+		ts.scheduleAtFixedRate();
 	}
 
 }

@@ -2,37 +2,35 @@ package eventsSourceProvider;
 
 import java.util.List;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.scheduling.TaskScheduler;
 
 import eventsSourceProvider.dao.EventsSourceDAO;
 import eventsSourceProvider.entities.EventsSource;
 
-public class TaskSchedulerExample {
+public class Scheduler {
 
 	/*
-	 * TODO: 
-	 * 0. Rename these classes and methods
-	 * 1. make the DAO act like singleton and do not use
-	 * ClassPathXmlApplicationContext outside Application.java
+	 * TODO: 0. Rename these classes and methods 1. make the DAO act like singleton
+	 * and do not use ClassPathXmlApplicationContext outside Application.java
 	 */
 
-	private TaskScheduler taskScheduler;
+	private TaskScheduler scheduler;
 	private long period;
 	private EventsSourceDAO eventsSourceDAO;
 
-	public TaskSchedulerExample(TaskScheduler taskScheduler) {
-		this.taskScheduler = taskScheduler;
+	public Scheduler(TaskScheduler scheduler) {
+		this.scheduler = scheduler;
 	}
 
 	private class EventsSourceSender implements Runnable {
+		private EventsSourceDAO eventsSourceDAO;
+
+		public EventsSourceSender(EventsSourceDAO eventsSourceDAO) {
+			this.eventsSourceDAO = eventsSourceDAO;
+		}
 
 		public void run() {
-			ApplicationContext context = new ClassPathXmlApplicationContext("Beans.xml");
-			EventsSourceDAO eventsSourceDAO = (EventsSourceDAO) context.getBean("eventsSourceDAO");
 			System.out.println(eventsSourceDAO);
-
 			List<EventsSource> eventsSourceList = eventsSourceDAO.getAll();
 			List<String> eventsSourceURLList = eventsSourceDAO.getAllsourceURLs();
 			if (eventsSourceList != null) {
@@ -41,11 +39,10 @@ public class TaskSchedulerExample {
 				}
 			}
 		}
-
 	}
 
-	public void schedule() {
-		taskScheduler.scheduleAtFixedRate(new EventsSourceSender(), period);
+	public void scheduleAtFixedRate() {
+		scheduler.scheduleAtFixedRate(new EventsSourceSender(this.getEventsSourceDAO()), period);
 	}
 
 	public long getPeriod() {

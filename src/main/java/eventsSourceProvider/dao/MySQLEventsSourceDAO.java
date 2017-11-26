@@ -28,13 +28,20 @@ public class MySQLEventsSourceDAO implements EventsSourceDAO {
 	@SuppressWarnings("unchecked")
 	public List<EventsSource> getAll() {
 		Session session = sessionFactory.openSession();
-		return session.createQuery("from eventsSourceProvider.entities.EventsSource").list();
+		List<EventsSource> eventsSources = session.createQuery("from eventsSourceProvider.entities.EventsSource")
+				.list();
+		session.close();
+		return eventsSources;
+
 	}
 
 	@SuppressWarnings("unchecked")
 	public List<String> getAllsourceURLs() {
 		Session session = sessionFactory.openSession();
-		return session.createQuery("SELECT ES.sourceURL from eventsSourceProvider.entities.EventsSource ES").list();
+		List<String> urls = session
+				.createQuery("SELECT ES.sourceURL from eventsSourceProvider.entities.EventsSource ES").list();
+		session.close();
+		return urls;
 	}
 
 }

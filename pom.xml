@@ -7,7 +7,7 @@
 	<version>1.0-SNAPSHOT</version>
 	<name>Event source provider</name>
 	<description>Event source provider for fb-events project</description>
-	
+
 	<properties>
 		<java.version>1.8</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -45,7 +45,7 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>8.0.8-dmr</version>
+			<version>6.0.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
