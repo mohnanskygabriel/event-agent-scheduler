@@ -23,7 +23,7 @@ public class EventsSource {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "source", columnDefinition = "varchar(100) NOT NULL")
+	@Column(name = "url", columnDefinition = "varchar(100) NOT NULL")
 	private String sourceURL;
 
 	@Column(name = "event_default_type", columnDefinition = "enum('PAGE','GROUP','USER') NOT NULL")
