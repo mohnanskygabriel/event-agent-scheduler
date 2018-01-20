@@ -1,37 +1,20 @@
 package eventsSourceProvider;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.springframework.scheduling.TaskScheduler;
-
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import eventsSourceProvider.dao.EventsSourceDAO;
-import eventsSourceProvider.entities.EventsSource;
+import eventagent.persistence.entities.*;
+import eventagent.persistence.dao.*;
 
 public class Scheduler {
 
-	/*
-	 * TODO: 1. HTTP-send
-	 */
-
 	private TaskScheduler scheduler;
-	private long period;
+	private long databaseCheckPeriod;
 	private EventsSourceDAO eventsSourceDAO;
-	private String httpURL;
+	private long eventsSourceAliveTimeInCacheInSeconds; 
+
 
 	public Scheduler(TaskScheduler scheduler) {
 		this.scheduler = scheduler;
@@ -45,15 +28,28 @@ public class Scheduler {
 		}
 
 		public void run() {
-			List<EventsSource> eventsSourceList = getEventsSourceDAO().getAll();
+			List<EventsSource> eventsSourceList = getEventsSourceDAO().getAllEventsSources();
 			Date currentDateAndTime = new Date();
 			if (eventsSourceList != null) {
 				for (EventsSource eventsSource : eventsSourceList) {
+				
+					//if eventsSource is already in cache it'll be skipped
+					if (getCachedEventsSource().contains(eventsSource)) {
+						continue;						
+					}
+
 					long dateDifferenceInSeconds = (eventsSource.getNextCheckTime().getTime()
 							- currentDateAndTime.getTime()) / 1000;
-					if (dateDifferenceInSeconds <= 3600)
+					/*
+					 * if events from source should be updated within a specified time by 
+					 * eventsSourceAliveTimeInCacheInSeconds add it into cache
+					 */
+					if (dateDifferenceInSeconds <= getEventsSourceAliveTimeInCacheInSeconds()) {
 						getCachedEventsSource().add(eventsSource);
+					}
 				}
+			}else{
+				//Send e-mail about eventsSource db down if not sent already
 			}
 			currentDateAndTime = new Date();
 			List<EventsSource> cachedEventsSource = getCachedEventsSource();
@@ -61,33 +57,13 @@ public class Scheduler {
 				for (EventsSource eventsSource : cachedEventsSource) {
 					long dateDifferenceInSeconds = (eventsSource.getNextCheckTime().getTime()
 							- currentDateAndTime.getTime()) / 1000;
+					//if the events from source had to be updated
 					if (dateDifferenceInSeconds <= 0) {
-						ObjectMapper mapper = new ObjectMapper();
-						try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-							mapper.writeValue(bos, eventsSource);
-							CloseableHttpClient httpClient = HttpClients.createDefault();
-							HttpPost httpPost = new HttpPost(getHttpURL());
-							httpPost.setHeader("Content-Type", "application/json");
-							httpPost.setHeader("Accept", "application/json");
-							HttpEntity postBody = new ByteArrayEntity(bos.toByteArray());
-							httpPost.setEntity(postBody);
-							HttpResponse response = httpClient.execute(httpPost);
-							/*
-							 * TODO: 1. tu cakam na odpoved treba skusit urobit
-							 * cakanie zopar sekund a nasledne urobit resend 2.
-							 * Treba mat otvoreny port na prijimanie spatneho
-							 * info o vykoonani checku source a zapis vysledku
-							 * do db, preratanie nasledujuceho casu, potrebujem
-							 * k tomu id source, cas kedy bol vykonany check a
-							 * vysledok
-							 */
-						} catch (JsonGenerationException e) {
-							e.printStackTrace();
-						} catch (JsonMappingException e) {
-							e.printStackTrace();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
+						/*
+						 * TODO: tu volam metodu od Patrika Rojeka
+						 * ROJEKDAO.updateSource(?eventsSource?)
+						 */
+						System.out.println("Urob update pre event: " + eventsSource);
 					}
 				}
 
@@ -100,19 +76,18 @@ public class Scheduler {
 		public void setCachedEventsSource(List<EventsSource> cachedEventsSource) {
 			this.cachedEventsSource = cachedEventsSource;
 		}
-
 	}
 
 	public void scheduleAtFixedRate() {
-		scheduler.scheduleAtFixedRate(new EventsSourceSender(this.getEventsSourceDAO()), period);
+		scheduler.scheduleAtFixedRate(new EventsSourceSender(this.getEventsSourceDAO()), databaseCheckPeriod);
 	}
 
-	public long getPeriod() {
-		return period;
+	public long getDatabaseCheckPeriod() {
+		return databaseCheckPeriod;
 	}
 
-	public void setPeriod(long period) {
-		this.period = period;
+	public void setDatabaseCheckPeriod(long period) {
+		this.databaseCheckPeriod = period;
 	}
 
 	public EventsSourceDAO getEventsSourceDAO() {
@@ -121,14 +96,14 @@ public class Scheduler {
 
 	public void setEventsSourceDAO(EventsSourceDAO eventsSourceDAO) {
 		this.eventsSourceDAO = eventsSourceDAO;
+	}	
+	
+	public long getEventsSourceAliveTimeInCacheInSeconds() {
+		return eventsSourceAliveTimeInCacheInSeconds;
 	}
 
-	public String getHttpURL() {
-		return httpURL;
-	}
-
-	public void setHttpURL(String httpURL) {
-		this.httpURL = httpURL;
+	public void setEventsSourceAliveTimeInCacheInSeconds(long eventsSourceAliveTimeInCacheInSeconds) {
+		this.eventsSourceAliveTimeInCacheInSeconds = eventsSourceAliveTimeInCacheInSeconds;
 	}
 
 }

@@ -26,7 +26,7 @@
 		<property name="dataSource" ref="dataSource" />
 		<property name="annotatedClasses">
 			<list>
-				<value>eventsSourceProvider.entities.EventsSource</value>
+				<value>eventagent.persistence.entities.EventsSource</value>
 			</list>
 		</property>
 		<property name="hibernateProperties">
@@ -38,7 +38,7 @@
 		</property>
 	</bean>
 
-	<bean id="eventsSourceDAO" class="eventsSourceProvider.dao.MySQLEventsSourceDAO">
+	<bean id="eventsSourceDAO" class="eventagent.persistence.dao.mysql.MySQLEventsSourceDAO">
 		<property name="sessionFactory" ref="hibernate5AnnotatedSessionFactory" />
 	</bean>
 
@@ -48,9 +48,10 @@
 
 	<bean id="scheduler" class="eventsSourceProvider.Scheduler">
 		<constructor-arg ref="taskScheduler" />
-		<property name="period" value="1000"></property>
+		<property name="databaseCheckPeriod" value="5000"></property>
+		<!-- How many seconds before update will be added eventsSource into cache -->
+		<property name="eventsSourceAliveTimeInCacheInSeconds" value="3600"></property>
 		<property name="eventsSourceDAO" ref="eventsSourceDAO"></property>
-		<property name="httpURL" value="${http.url}"></property>
 	</bean>
 
 </beans>
