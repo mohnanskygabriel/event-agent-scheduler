@@ -1,0 +1,20 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+	<bean id="taskScheduler"
+		class="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler">
+	</bean>
+
+	<bean id="scheduler" class="eventsSourceProvider.Scheduler">
+		<constructor-arg ref="taskScheduler" />
+		<property name="databaseCheckPeriod" value="5000"></property>
+		<!-- How many seconds before update will be added eventsSource into cache -->
+		<property name="eventsSourceAliveTimeInCacheInSeconds" value="3600"></property>
+		<property name="eventsSourceDAO" ref="eventsSourceDAO"></property>
+	</bean>
+
+</beans>

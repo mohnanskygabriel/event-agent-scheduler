@@ -13,8 +13,7 @@ public class Scheduler {
 	private TaskScheduler scheduler;
 	private long databaseCheckPeriod;
 	private EventsSourceDAO eventsSourceDAO;
-	private long eventsSourceAliveTimeInCacheInSeconds; 
-
+	private long eventsSourceAliveTimeInCacheInSeconds;
 
 	public Scheduler(TaskScheduler scheduler) {
 		this.scheduler = scheduler;
@@ -32,24 +31,25 @@ public class Scheduler {
 			Date currentDateAndTime = new Date();
 			if (eventsSourceList != null) {
 				for (EventsSource eventsSource : eventsSourceList) {
-				
-					//if eventsSource is already in cache it'll be skipped
+
+					// if eventsSource is already in cache it'll be skipped
 					if (getCachedEventsSource().contains(eventsSource)) {
-						continue;						
+						continue;
 					}
 
 					long dateDifferenceInSeconds = (eventsSource.getNextCheckTime().getTime()
 							- currentDateAndTime.getTime()) / 1000;
 					/*
-					 * if events from source should be updated within a specified time by 
-					 * eventsSourceAliveTimeInCacheInSeconds add it into cache
+					 * if events from source should be updated within a
+					 * specified time by eventsSourceAliveTimeInCacheInSeconds
+					 * add it into cache
 					 */
 					if (dateDifferenceInSeconds <= getEventsSourceAliveTimeInCacheInSeconds()) {
 						getCachedEventsSource().add(eventsSource);
 					}
 				}
-			}else{
-				//Send e-mail about eventsSource db down if not sent already
+			} else {
+				// Send e-mail about eventsSource db down if not sent already
 			}
 			currentDateAndTime = new Date();
 			List<EventsSource> cachedEventsSource = getCachedEventsSource();
@@ -57,7 +57,7 @@ public class Scheduler {
 				for (EventsSource eventsSource : cachedEventsSource) {
 					long dateDifferenceInSeconds = (eventsSource.getNextCheckTime().getTime()
 							- currentDateAndTime.getTime()) / 1000;
-					//if the events from source had to be updated
+					// if the events from source had to be updated
 					if (dateDifferenceInSeconds <= 0) {
 						/*
 						 * TODO: tu volam metodu od Patrika Rojeka
@@ -96,8 +96,8 @@ public class Scheduler {
 
 	public void setEventsSourceDAO(EventsSourceDAO eventsSourceDAO) {
 		this.eventsSourceDAO = eventsSourceDAO;
-	}	
-	
+	}
+
 	public long getEventsSourceAliveTimeInCacheInSeconds() {
 		return eventsSourceAliveTimeInCacheInSeconds;
 	}
