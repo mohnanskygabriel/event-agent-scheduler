@@ -3,10 +3,10 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>sk.upjs.ics</groupId>
-	<artifactId>event_source_provider</artifactId>
-	<version>1.0-SNAPSHOT</version>
-	<name>Event source provider</name>
-	<description>Event source provider for fb-events project</description>
+	<artifactId>event-agent-scheduler</artifactId>
+	<version>1.0</version>
+	<name>Scheduler</name>
+	<description>Scheduled event source provider for event-agent project</description>
 
 	<properties>
 		<java.version>1.8</java.version>
@@ -28,7 +28,7 @@
 		<dependency>
 			<groupId>sk.upjs.ics</groupId>
 			<artifactId>event-agent-persistence-myssql</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
 
