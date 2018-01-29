@@ -3,7 +3,6 @@ package eventsSourceProvider;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
 import org.springframework.scheduling.TaskScheduler;
 import eventagent.persistence.entities.*;
 import eventagent.persistence.dao.*;
@@ -13,68 +12,37 @@ public class Scheduler {
 	private TaskScheduler scheduler;
 	private long databaseCheckPeriod;
 	private EventsSourceDAO eventsSourceDAO;
-	private long eventsSourceAliveTimeInCacheInSeconds;
+	private List<EventsSource> calledForUpdate;
 
 	public Scheduler(TaskScheduler scheduler) {
 		this.scheduler = scheduler;
 	}
 
 	private class EventsSourceSender implements Runnable {
-		private List<EventsSource> cachedEventsSource;
 
 		public EventsSourceSender(EventsSourceDAO eventsSourceDAO) {
-			setCachedEventsSource(new ArrayList<>());
+			setCalledForUpdate(new ArrayList<>());
 		}
 
 		public void run() {
 			List<EventsSource> eventsSourceList = getEventsSourceDAO().getAllEventsSources();
-			Date currentDateAndTime = new Date();
 			if (eventsSourceList != null) {
 				for (EventsSource eventsSource : eventsSourceList) {
-
-					// if eventsSource is already in cache it'll be skipped
-					if (getCachedEventsSource().contains(eventsSource)) {
-						continue;
-					}
-
-					long dateDifferenceInSeconds = (eventsSource.getNextCheckTime().getTime()
-							- currentDateAndTime.getTime()) / 1000;
 					/*
-					 * if events from source should be updated within a
-					 * specified time by eventsSourceAliveTimeInCacheInSeconds
-					 * add it into cache
+					 * if the source was not called for update before and the
+					 * calculated seconds left to update are less then the check
+					 * period of sources call the update
 					 */
-					if (dateDifferenceInSeconds <= getEventsSourceAliveTimeInCacheInSeconds()) {
-						getCachedEventsSource().add(eventsSource);
-					}
-				}
-			} else {
-				// Send e-mail about eventsSource db down if not sent already
-			}
-			currentDateAndTime = new Date();
-			List<EventsSource> cachedEventsSource = getCachedEventsSource();
-			if (cachedEventsSource != null && cachedEventsSource.size() > 0)
-				for (EventsSource eventsSource : cachedEventsSource) {
-					long dateDifferenceInSeconds = (eventsSource.getNextCheckTime().getTime()
-							- currentDateAndTime.getTime()) / 1000;
-					// if the events from source had to be updated
-					if (dateDifferenceInSeconds <= 0) {
+					if (!getCalledForUpdate().contains(eventsSource)
+							&& ((eventsSource.getNextCheckTime().getTime() - new Date().getTime())
+									/ 1000) <= getDatabaseCheckPeriod()) {
 						/*
-						 * TODO: tu volam metodu od Patrika Rojeka
-						 * ROJEKDAO.updateSource(?eventsSource?)
-						 */
-						System.out.println("Urob update pre event: " + eventsSource);
+						 * TODO:updateSource(eventsSource)
+						 */						
+						getCalledForUpdate().add(eventsSource);
 					}
 				}
-
-		}
-
-		public List<EventsSource> getCachedEventsSource() {
-			return cachedEventsSource;
-		}
-
-		public void setCachedEventsSource(List<EventsSource> cachedEventsSource) {
-			this.cachedEventsSource = cachedEventsSource;
+			}
 		}
 	}
 
@@ -98,12 +66,12 @@ public class Scheduler {
 		this.eventsSourceDAO = eventsSourceDAO;
 	}
 
-	public long getEventsSourceAliveTimeInCacheInSeconds() {
-		return eventsSourceAliveTimeInCacheInSeconds;
+	public List<EventsSource> getCalledForUpdate() {
+		return calledForUpdate;
 	}
 
-	public void setEventsSourceAliveTimeInCacheInSeconds(long eventsSourceAliveTimeInCacheInSeconds) {
-		this.eventsSourceAliveTimeInCacheInSeconds = eventsSourceAliveTimeInCacheInSeconds;
+	public void setCalledForUpdate(List<EventsSource> calledForUpdate) {
+		this.calledForUpdate = calledForUpdate;
 	}
 
 }

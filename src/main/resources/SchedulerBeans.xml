@@ -13,7 +13,6 @@
 		<constructor-arg ref="taskScheduler" />
 		<property name="databaseCheckPeriod" value="5000"></property>
 		<!-- How many seconds before update will be added eventsSource into cache -->
-		<property name="eventsSourceAliveTimeInCacheInSeconds" value="3600"></property>
 		<property name="eventsSourceDAO" ref="eventsSourceDAO"></property>
 	</bean>
 
