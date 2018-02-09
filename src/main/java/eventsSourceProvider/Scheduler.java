@@ -3,7 +3,13 @@ package eventsSourceProvider;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import org.json.JSONException;
 import org.springframework.scheduling.TaskScheduler;
+
+import com.mycompany.fbrest.Listener;
+import com.mycompany.fbrest.services.GraphAPIService;
+
 import eventagent.persistence.entities.*;
 import eventagent.persistence.dao.*;
 
@@ -38,7 +44,17 @@ public class Scheduler {
 									/ 1000) <= getDatabaseCheckPeriod()) {
 						/*
 						 * TODO:updateSource(eventsSource)
-						 */						
+						 */
+
+						GraphAPIService gas = new GraphAPIService();
+						try {
+							gas.saveEvents(eventsSource, (EventsSource es) -> {
+								getEventsSourceDAO().update(es);
+							});
+						} catch (JSONException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 						getCalledForUpdate().add(eventsSource);
 					}
 				}
